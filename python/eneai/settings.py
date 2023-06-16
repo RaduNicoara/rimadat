@@ -10,6 +10,8 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 import os
+
+import logging
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -25,7 +27,7 @@ SECRET_KEY = "django-insecure-*l+rfnont%s6$7zg@_p$fvn+h@brpmzb06@-b$*)6vmu4j7ly$
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -78,9 +80,14 @@ WSGI_APPLICATION = "eneai.wsgi.application"
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
 DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'eneai',
+        'USER': 'eneai',
+        'PASSWORD': 'eneai',
+        'HOST': '127.0.0.1',  # Or an IP Address that your DB is hosted on
+        'CHARSET': 'utf8',
+        'COLLATION': 'utf8_general_ci',
     }
 }
 
@@ -130,3 +137,9 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 # openapi
 
 API_KEY = "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"
+
+try:
+    from eneai.local_settings import *
+except Exception as e:
+    logging.error("No local settings found")
+    logging.error(e)
