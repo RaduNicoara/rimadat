@@ -2,6 +2,9 @@ from django.db import models
 
 
 class ConversationMessage(models.Model):
+    class Meta:
+        app_label = "core"
+
     user = models.ForeignKey("auth.User", on_delete=models.CASCADE)
     content = models.TextField()
     conversation = models.ForeignKey("core.ChatConversation", on_delete=models.CASCADE)
@@ -10,3 +13,8 @@ class ConversationMessage(models.Model):
 class ChatConversation(models.Model):
     created_by = models.ForeignKey("auth.User", on_delete=models.CASCADE)
     name = models.CharField(max_length=256)
+
+
+class Entity(models.Model):
+    name = models.CharField(max_length=256)
+    interactions = models.JSONField()
