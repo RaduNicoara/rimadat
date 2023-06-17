@@ -43,7 +43,14 @@ function initMap() {
             throw new Error('Error: ' + response.status);
         }
     }).then(function (data) {
-        console.log(data["pois"]);
+      console.log(data["pois"]);
+      data["pois"].forEach((poi) => {
+        new google.maps.Marker({
+          position: {lat: poi.geometry.location.lat, lng: poi.geometry.location.lng},
+          map: map,
+          title: poi.name
+        });
+      });
     })
   };
 

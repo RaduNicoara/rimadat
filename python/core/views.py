@@ -91,7 +91,7 @@ class AdventureListCreateView(generics.ListCreateAPIView):
 
         decoded_coordinates = self.decode_polyline(polyline)
 
-        desired_interval = 20  # Interval in kilometers
+        desired_interval = 10  # Interval in kilometers
         trimmed_coordinates = []
 
         previous_coord = decoded_coordinates[0]
@@ -109,10 +109,8 @@ class AdventureListCreateView(generics.ListCreateAPIView):
 
         pois = []
         for lat, lng in trimmed_coordinates:
-            radius = 10000  # Adjust the radius as per your requirement
-            types = ['amusement_park', 'park', 'library', 'aquarium', 'art_gallery', 'book_store', 'campground', 'church', 'city_hall',
-                     'fire_station', 'hindu_temple', 'mosque', 'museum', 'post_office', 'primary_school', 'school', 'secondary_school',
-                     'stadium', 'synagogue', 'tourist_attraction', 'train_station', 'university', 'zoo']  # Replace with desired types of POIs
+            radius = 5000  # Adjust the radius as per your requirement
+            types = ['tourist_attraction']
             api_key = settings.GMAPS_API_KEY  # Replace with your actual API key
 
             pois_near_coordinate = self.get_pois_near_coordinate(lat, lng, radius, types, api_key)
