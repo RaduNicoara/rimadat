@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from core.models import ConversationMessage, ChatConversation, Entity
+from core.models import ConversationMessage, ChatConversation
 
 
 class ConversationMessageSerializer(serializers.ModelSerializer):
@@ -11,10 +11,4 @@ class ConversationMessageSerializer(serializers.ModelSerializer):
 class ChatConversationSerializer(serializers.ModelSerializer):
     class Meta:
         model = ChatConversation
-        fields = '__all__'
-
-
-class EntitySerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Entity
         fields = '__all__'
