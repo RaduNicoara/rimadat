@@ -188,7 +188,11 @@
                 },
                 body: JSON.stringify(body)
             }).then(function (response) {
-                return response.json()
+                if (response.ok) {
+                    return response.json();
+                } else {
+                    throw new Error('Error: ' + response.status);
+                }
             }).then(function (data) {
                 conversationId = data["id"];
                 sendMessage(content);
