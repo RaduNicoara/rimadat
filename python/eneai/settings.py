@@ -144,6 +144,7 @@ LOGIN_REDIRECT_URL = "/"
 # openapi
 
 API_KEY = "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"
+GMAPS_API_KEY = "AIzaSyDxgmA0qKUgsom2K0YMVf8kUS-FFDB45Cs"
 
 try:
     from eneai.local_settings import *
