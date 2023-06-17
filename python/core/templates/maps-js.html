@@ -20,7 +20,7 @@ function initMap() {
   infoWindow = new google.maps.InfoWindow();
   directionsRenderer.setMap(map);
   const locationButton = document.createElement("button");
-
+  var markers = [];
 
   const onChangeHandler = function () {
     const start = document.getElementById("start").value;
@@ -29,6 +29,7 @@ function initMap() {
     var body = {
         "start": start,
         "end": end,
+        "user": '{{ user.id }}',
     }
     fetch('{% url "adventure-list" %}', {
         method: 'POST',
@@ -44,12 +45,18 @@ function initMap() {
         }
     }).then(function (data) {
       console.log(data["pois"]);
+      if (markers.length > 0) {
+          for (var i = 0; i < markers.length; i++) {
+            markers[i].setMap(null);
+          }
+      }
       data["pois"].forEach((poi) => {
-        new google.maps.Marker({
+        var marker = new google.maps.Marker({
           position: {lat: poi.geometry.location.lat, lng: poi.geometry.location.lng},
           map: map,
           title: poi.name
         });
+        markers.push(marker);
       });
     })
   };
