@@ -41,5 +41,9 @@ class PointOfInterest(models.Model):
     latitude = models.DecimalField(max_digits=12, decimal_places=6)
     order = models.SmallIntegerField(default=0)
     visited = models.BooleanField(default=False)
+    quiz_completed = models.BooleanField(default=False)
     story = models.TextField()
     adventure = models.ForeignKey('core.Adventure', related_name='points_of_interest', on_delete=models.CASCADE)
+
+    def __str__(self):
+        return self.name

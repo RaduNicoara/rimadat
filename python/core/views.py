@@ -35,10 +35,39 @@ def submit_response(request, *args, **kwargs):
     return HttpResponse(status=200, content_type="application_json", content=content)
 
 
+def generate_quiz(pois):
+    shape = [{
+        "question": "How many days makes a week ?",
+        "optionA": "10 days",
+        "optionB": "14 days",
+        "optionC": "5 days",
+        "optionD": "7 days",
+        "correctOption": "optionD"
+    }]
+
+    quiz_json = []
+    client = OpenAPIClient()
+    for poi in pois:
+        prompt = '%s Generate 5 trivia questions about the text with answers. ' \
+                 'Format the response as JSON in the shape of: %s' % (poi.story, json.dumps(shape))
+        messages = [{
+            "role": "user",
+            "content": prompt
+        }]
+        response = client.submit(messages)
+        quiz_json += json.loads(response['content'])
+
+    return quiz_json
+
+
 def quiz_completed(request, *args, **kwargs):
     data = json.loads(request.body.decode())
     points_earned = data['points_earned']
     adventure = Adventure.objects.get(id=data['adventure_id'])
+    poi_ids = data['poi_ids']
+    for poi in PointOfInterest.objects.filter(id__in=poi_ids):
+        poi.quiz_completed = True
+        poi.save()
     adventure.points_earned += points_earned
     adventure.save()
     content = json.dumps({"message": 'Congratulations! You got %d answers right! You have a total of %d points!'
@@ -60,34 +89,13 @@ class QuizView(TemplateView):
     template_name = "quiz.html"
 
     def get_context_data(self, **kwargs):
-        questions = [
-          {
-            "question": "Who led the Legion of the Iron Wolves in the battle for independence?",
-            "optionA": "General Adrian Vasilescu",
-            "optionB": "Colonel Victor Popescu",
-            "optionC": "Captain Radu Constantinescu",
-            "optionD": "Major Alexandru Ionescu",
-            "correctOption": "optionA"
-          },
-          {
-            "question": "In which year did the famous battle for independence take place in Romania?",
-            "optionA": "1910",
-            "optionB": "1923",
-            "optionC": "1935",
-            "optionD": "1948",
-            "correctOption": "optionB"
-          },
-          {
-            "question": "What became a symbol of resistance in Romania after the victory in the battle?",
-            "optionA": "The Legion of the Iron Wolves",
-            "optionB": "The Legion of the Golden Eagles",
-            "optionC": "The Battalion of the Silver Falcons",
-            "optionD": "The Regiment of the Bronze Lions",
-            "correctOption": "optionA"
-          }
-        ]
         context = super(QuizView, self).get_context_data(**kwargs)
+        poi_ids = [1, 2]
+        pois_all = PointOfInterest.objects.all()
+        pois = [pois_all[0], pois_all[1]]
+        questions = generate_quiz(pois)
         context['questions_dict'] = questions
+        context['poi_ids'] = poi_ids
         context['adventure_id'] = 1
         return context
 

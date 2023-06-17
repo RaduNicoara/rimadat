@@ -7,11 +7,10 @@
 </head>
 <body onload="NextQuestion(0)">
     <main>
-        <div class="game-quiz-container">
-
+        <h1 id="quiz-completed"></h1>
+        <div id="game-quiz-container">
             <div class="game-details-container">
-                <h1 id="quiz-completed"></h1>
-                <h1> Question : <span id="question-number"></span> / 3</h1>
+                <h1> Question : <span id="question-number"></span><span id="total-questions-number"></span></h1>
             </div>
 
             <div class="game-question-container">
@@ -64,6 +63,20 @@
     <script>
 
     const questions = {{ questions_dict|safe }};
+    const poi_ids = {{ poi_ids|safe }};
+
+    let shuffledQuestions = [];
+
+    function handleQuestions() {
+        //function to shuffle and push questions to shuffledQuestions array
+        document.getElementById("total-questions-number").innerHTML = " / " + questions.length;
+        while (shuffledQuestions.length < questions.length) {
+            const random = questions[Math.floor(Math.random() * questions.length)]
+            if (!shuffledQuestions.includes(random)) {
+                shuffledQuestions.push(random)
+            }
+        }
+    }
 
     let questionNumber = 1
     let playerScore = 0
@@ -72,7 +85,8 @@
 
     // function for displaying next question in the array to dom
     function NextQuestion(index) {
-        const currentQuestion = questions[index]
+        handleQuestions()
+        const currentQuestion = shuffledQuestions[index]
         document.getElementById("question-number").innerHTML = questionNumber
         document.getElementById("display-question").innerHTML = currentQuestion.question;
         document.getElementById("option-one-label").innerHTML = currentQuestion.optionA;
@@ -84,7 +98,7 @@
 
 
     function checkForAnswer() {
-        const currentQuestion = questions[indexNumber] //gets current Question
+        const currentQuestion = shuffledQuestions[indexNumber] //gets current Question
         const currentQuestionAnswer = currentQuestion.correctOption //gets current Question's answer
         const options = document.getElementsByName("option"); //gets all elements in dom with name of 'option' (in this the radio inputs)
         let correctOption = null
@@ -165,6 +179,7 @@
     function handleEndGame() {
         const body = {
             adventure_id: "{{ adventure_id }}",
+            poi_ids: poi_ids,
             points_earned: playerScore
         };
 
@@ -185,6 +200,7 @@
             })
             .then(function(data) {
                 document.getElementById("quiz-completed").innerHTML = data.message;
+                document.getElementById('game-quiz-container').style.display = "none";
             });
     }
 
