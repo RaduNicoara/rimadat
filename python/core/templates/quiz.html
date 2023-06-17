@@ -10,6 +10,7 @@
         <div class="game-quiz-container">
 
             <div class="game-details-container">
+                <h1 id="quiz-completed"></h1>
                 <h1> Question : <span id="question-number"></span> / 3</h1>
             </div>
 
@@ -183,7 +184,7 @@
                 }
             })
             .then(function(data) {
-                console.log(data);
+                document.getElementById("quiz-completed").innerHTML = data.message;
             });
     }
 

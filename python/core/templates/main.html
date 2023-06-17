@@ -17,6 +17,9 @@
                 {% endfor %}
             </div>
         {% else %}
+        <div>
+            {% include 'maps-js.html' %}
+        </div>
             <div class="col-sm-4">
                 <h2>Conversations</h2>
                 <button id="new-conversation-btn" class="btn btn-primary">New Conversation</button>
@@ -40,7 +43,10 @@
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
-
+<script
+  src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDxgmA0qKUgsom2K0YMVf8kUS-FFDB45Cs&callback=initMap&v=weekly"
+  defer
+></script>
 <script>
 
     var conversationId = null;
