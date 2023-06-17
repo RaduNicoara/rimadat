@@ -7,6 +7,7 @@ from core.views import (
     MainView,
     login_user,
     submit_response,
+    quiz_completed,
     QuizView,
 )
 
@@ -18,5 +19,6 @@ urlpatterns = [
     path('messages/<int:pk>/', ConversationMessageRetrieveUpdateDestroyView.as_view(), name='message-detail'),
     path('conversations/', ChatConversationListCreateView.as_view(), name='conversation-list'),
     path('conversations/<int:pk>/', ChatConversationRetrieveUpdateDestroyView.as_view(), name='conversation-detail'),
-    path('quiz/', QuizView.as_view(), name="quiz")
+    path('quiz/', QuizView.as_view(), name="quiz"),
+    path('quiz-completed/', quiz_completed, name="quiz-completed"),
 ]

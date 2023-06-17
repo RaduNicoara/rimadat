@@ -5,7 +5,7 @@ from django.http import HttpResponse
 from django.views.generic import TemplateView
 from rest_framework import generics, status
 
-from core.models import ConversationMessage, ChatConversation
+from core.models import ConversationMessage, ChatConversation, Adventure
 from core.serializers import ConversationMessageSerializer, ChatConversationSerializer
 from rest_framework.authtoken.admin import User
 
@@ -27,6 +27,16 @@ def submit_response(request, *args, **kwargs):
     user = User.objects.get(username="system")
     ConversationMessage.objects.create(user=user, content=response["content"], conversation=conversation)
     content = json.dumps({"message": response["content"]}).encode()
+    return HttpResponse(status=200, content_type="application_json", content=content)
+
+
+def quiz_completed(request, *args, **kwargs):
+    data = json.loads(request.body.decode())
+    points_earned = data['points_earned']
+    adventure = Adventure.objects.get(id=data['adventure_id'])
+    adventure.points_earned += points_earned
+    adventure.save()
+    content = json.dumps({"message": 'Congratulations! Your have a total of %d points!' % adventure.points_earned})
     return HttpResponse(status=200, content_type="application_json", content=content)
 
 
@@ -72,6 +82,7 @@ class QuizView(TemplateView):
         ]
         context = super(QuizView, self).get_context_data(**kwargs)
         context['questions_dict'] = questions
+        context['adventure_id'] = 1
         return context
 
 # API Views

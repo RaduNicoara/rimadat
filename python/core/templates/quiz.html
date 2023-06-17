@@ -10,7 +10,6 @@
         <div class="game-quiz-container">
 
             <div class="game-details-container">
-                <h1>Score : <span id="player-score"></span> / 3</h1>
                 <h1> Question : <span id="question-number"></span> / 3</h1>
             </div>
 
@@ -74,7 +73,6 @@
     function NextQuestion(index) {
         const currentQuestion = questions[index]
         document.getElementById("question-number").innerHTML = questionNumber
-        document.getElementById("player-score").innerHTML = playerScore
         document.getElementById("display-question").innerHTML = currentQuestion.question;
         document.getElementById("option-one-label").innerHTML = currentQuestion.optionA;
         document.getElementById("option-two-label").innerHTML = currentQuestion.optionB;
@@ -136,7 +134,7 @@
         unCheckRadioButtons()
         //delays next question displaying for a second
         setTimeout(() => {
-            if (indexNumber <= 2) {
+            if (indexNumber < questions.length) {
                 NextQuestion(indexNumber)
             }
             else {
@@ -164,7 +162,29 @@
 
     // function for when all questions being answered
     function handleEndGame() {
-        console.log("end");
+        const body = {
+            adventure_id: "{{ adventure_id }}",
+            points_earned: playerScore
+        };
+
+        fetch("{% url 'quiz-completed' %}", {
+            method: "POST",mode: "same-origin",
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify(body)
+        })
+            .then(function(response) {
+                if (response.ok) {
+                    return response.json();
+                } else {
+                    throw new Error("Error: " + response.status);
+                }
+            })
+            .then(function(data) {
+                console.log(data);
+            });
     }
 
     </script>
