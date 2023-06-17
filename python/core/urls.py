@@ -6,12 +6,14 @@ from core.views import (
     ChatConversationRetrieveUpdateDestroyView,
     MainView,
     login_user,
-    QuizView
+    submit_response,
+    QuizView,
 )
 
 urlpatterns = [
     path('', MainView.as_view(), name="main"),
     path('login/', login_user, name="login"),
+    path('submit/', submit_response, name="submit"),
     path('messages/', ConversationMessageListCreateView.as_view(), name='message-list'),
     path('messages/<int:pk>/', ConversationMessageRetrieveUpdateDestroyView.as_view(), name='message-detail'),
     path('conversations/', ChatConversationListCreateView.as_view(), name='conversation-list'),

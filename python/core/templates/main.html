@@ -8,15 +8,15 @@
 <body>
 
 
-    <div class="container-fluid">
-        <div class="row">
-            {% if not user.is_authenticated %}
-                <div class="col-sm-8" style="margin: auto; align-content: center;">
-                    {% for user in users %}
-                        <button name="select-user" data-user="{{ user.id }}">{{ user.first_name }}</button>
-                    {% endfor %}
-                </div>
-            {% else %}
+<div class="container-fluid">
+    <div class="row">
+        {% if not user.is_authenticated %}
+            <div class="col-sm-8" style="margin: auto; align-content: center;">
+                {% for user in users %}
+                    <button name="select-user" data-user="{{ user.id }}">{{ user.first_name }}</button>
+                {% endfor %}
+            </div>
+        {% else %}
             <div class="col-sm-4">
                 <h2>Conversations</h2>
                 <button id="new-conversation-btn" class="btn btn-primary">New Conversation</button>
@@ -32,180 +32,218 @@
                     <button type="button" class="btn btn-primary" id="send">Send</button>
                 </form>
             </div>
-            {% endif %}
-        </div>
+        {% endif %}
     </div>
+</div>
 
-    <!-- Include Bootstrap JS and jQuery -->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+<!-- Include Bootstrap JS and jQuery -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
 
-    <script>
+<script>
 
-        var conversationId = null;
+    var conversationId = null;
 
-        function getConversations() {
-            fetch(
+    function getConversations() {
+        fetch(
             '{% url "conversation-list" %}',
             {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json'
-                  }
+                }
             }
-            ).then(function(response) {
+        ).then(function (response) {
+            if (response.ok) {
+                return response.json();
+            } else {
+                throw new Error('Error: ' + response.status);
+            }
+        })
+            .then(function (data) {
+
+                const conversationList = document.getElementById('conversation-list');
+                conversationList.innerHTML = '';
+
+                data.forEach((conversation) => {
+                    const div = document.createElement('div');
+                    div.textContent = conversation.name;
+                    div.setAttribute("data-id", conversation.id)
+                    div.name = "conversation"
+                    div.onclick = handleConversationSelection
+                    conversationList.appendChild(div);
+                });
+            })
+    }
+
+    function sendMessage(content) {
+        // AJAX request to send a new message
+
+        var body = {
+            "user": '{{ user.id }}',
+            "content": content,
+            "conversation": conversationId
+        }
+        fetch('{% url "message-list" %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(body)
+        })
+            .then(function (response) {
                 if (response.ok) {
                     return response.json();
                 } else {
                     throw new Error('Error: ' + response.status);
                 }
             })
-            .then(function(data) {
+            .then(function (data) {
                 // Append the received response to the conversation messages
-                console.log(data)
+                var conversationMessages = document.getElementById('conversation-messages');
+                var responseText = document.createElement('p');
+                responseText.textContent = data["content"];
+                conversationMessages.appendChild(responseText);
+            }).then(function () {
+            fetch('{% url "submit" %}', {
+                method: 'POST',
+                mode: "same-origin",
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: JSON.stringify({"conversation_id": conversationId})
+            }).then(function (response) {
+                if (response.ok) {
+                    return response.json();
+                } else {
+                    throw new Error('Error: ' + response.status);
+                }
+            }).then(function (data) {
+                var conversationMessages = document.getElementById('conversation-messages');
+                var responseText = document.createElement('p');
+                responseText.textContent = data["message"];
+                conversationMessages.appendChild(responseText);
             })
-        }
+        })
+            .catch(function (error) {
+                // Handle the error scenario
+                console.error(error);
+            });
+        $("#message-input").val("")
+    }
 
-        function sendMessage(conversationId, content) {
-            // AJAX request to send a new message
+    // Function to load conversation messages in the main pane and update the conversation list
+    function loadConversationMessages() {
+        // Fetch messages for the conversation using AJAX GET request
 
-            var body = {
-                "user": 0,
-                "content": $("#message-input").val(),
-                "conversation": conversationId
+        fetch(
+            '{% url "conversation-list" %}' + conversationId,
+            {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            }).then(function (response) {
+            if (response.ok) {
+                return response.json();
+            } else {
+                throw new Error('Error: ' + response.status);
             }
-            fetch('{% url "message-list" %}', {
+        }).then(function (data) {
+                const conversationMessages = document.getElementById('conversation-messages');
+                conversationMessages.innerHTML = '';
+                const messages = data["messages"]
+                messages.forEach((message) => {
+                    const div = document.createElement('div');
+                    div.textContent = message.content;
+                    conversationMessages.appendChild(div);
+                });
+            }
+        );
+    }
+
+    // Function to handle conversation selection
+    function handleConversationSelection() {
+        // Load the selected conversation's messages
+        conversationId = this.getAttribute("data-id")
+        loadConversationMessages();
+    }
+
+    // Function to handle form submission
+
+    $("#send").on("click", function () {
+        const content = $("#message-input").val()
+        debugger
+        if (conversationId == null) {
+            const body = {
+                "name": content,
+                "created_by": "{{ user.id }}"
+            }
+            fetch('{% url "conversation-list" %}', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify(body)
-            })
-            .then(function(response) {
+            }).then(function (response) {
                 if (response.ok) {
                     return response.json();
                 } else {
                     throw new Error('Error: ' + response.status);
                 }
+            }).then(function (data) {
+                conversationId = data["id"];
+                sendMessage(content);
             })
-            .then(function(data) {
-                // Append the received response to the conversation messages
-                var conversationMessages = document.getElementById('conversation-messages');
-                var responseText = document.createElement('p');
-                responseText.textContent = data.response;
-                conversationMessages.appendChild(responseText);
+        } else {
+            sendMessage(content);
+        }
+
+    })
+
+    $("[name=select-user]").on("click", data => {
+
+        fetch('{% url "login" %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            mode: "same-origin",
+            body: JSON.stringify({
+                "id": data.target.getAttribute("data-user"),
             })
-            .catch(function(error) {
-                // Handle the error scenario
-                console.error(error);
-            });
-        }
-
-        // Function to load conversation messages in the main pane and update the conversation list
-        function loadConversationMessages(conversationId) {
-            // Fetch messages for the conversation using AJAX GET request
-
-            fetch(
-                '{% url "conversation-list" %}/' + conversationId,
-                {
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json'
-                      }
-                }
-                ).then( data => function (data) {
-                    const conversationMessages = document.getElementById('conversation-messages');
-                    conversationMessages.innerHTML = '';
-
-                    data.forEach((message) => {
-                        const div = document.createElement('div');
-                        div.textContent = message.content;
-                        conversationMessages.appendChild(div);
-                    });
-
-                    updateConversationList(data); // Update the conversation list
-            });
-        }
-
-        // Function to handle conversation selection
-        function handleConversationSelection(conversationId) {
-            // Load the selected conversation's messages
-            loadConversationMessages(conversationId);
-        }
-
-        // Function to handle form submission
-
-        $("#send").on("click", function () {
-            const content = $("#message-input").valueOf()
-
-            if(conversationId == null){
-                 const body = {
-                        "name": content,
-                        "created_by":  "{{ user.id }}"
-                    }
-                fetch('{% url "conversation-list" %}', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(body)
-                }).then(function(response) {
-                    return response.json()
-                }).then(function(data) {
-                    console.log(data)
-                })
-            }
-            sendMessage(conversationId, );
         })
-
-        // Function to update the view with conversation messages
-        function updateView(messages) {
-            const conversationMessages = document.getElementById('conversation-messages');
-            conversationMessages.innerHTML = '';
-
-            messages.forEach((message) => {
-                const div = document.createElement('div');
-                div.textContent = message.content;
-                conversationMessages.appendChild(div);
-            });
-        }
-
-        $("[name=select-user]").on("click", data => {
-
-            fetch('{% url "login" %}', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': '{{ csrf_token }}'
-                },
-                mode: "same-origin",
-                body: JSON.stringify({
-                    "id": data.target.getAttribute("data-user"),
-                })
-            })
-            .then(function(response) {
+            .then(function (response) {
                 if (response.ok) {
                     return response.json();
                 } else {
                     throw new Error('Error: ' + response.status);
                 }
             })
-            .then(function(data) {
+            .then(function (data) {
                 // Append the received response to the conversation messages
                 var conversationMessages = document.getElementById('conversation-messages');
                 var responseText = document.createElement('p');
                 responseText.textContent = data.response;
                 conversationMessages.appendChild(responseText);
             })
-            .catch(function(error) {
+            .catch(function (error) {
                 // Handle the error scenario
                 console.error(error);
             });
-        });
+    });
 
-        getConversations()
+    $("#new-conversation-btn").on("click", function (event) {
+        conversationId = null
+        $("#message-input").val("")
+        $("#conversation-messages").html("")
+    })
 
-    </script>
+    getConversations()
+
+</script>
 </body>
 </html>
