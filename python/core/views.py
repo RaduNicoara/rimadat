@@ -2,13 +2,14 @@ import json
 
 from django.contrib.auth import login
 from django.http import HttpResponse
-from django.views import View
 from django.views.generic import TemplateView
-from rest_framework import generics
+from rest_framework import generics, status
 
 from core.models import ConversationMessage, ChatConversation
 from core.serializers import ConversationMessageSerializer, ChatConversationSerializer
 from rest_framework.authtoken.admin import User
+
+from api.client import OpenAPIClient
 
 
 def login_user(request, *args, **kwargs):
@@ -16,6 +17,17 @@ def login_user(request, *args, **kwargs):
     user = User.objects.get(id=int(data["id"]))
     login(request, user)
     return HttpResponse(200)
+
+
+def submit_response(request, *args, **kwargs):
+    data = json.loads(request.body.decode())
+    client = OpenAPIClient()
+    conversation = ChatConversation.objects.get(id=data["conversation_id"])
+    response = client.submit(conversation.get_messages_json())
+    user = User.objects.get(username="system")
+    ConversationMessage.objects.create(user=user, content=response["content"], conversation=conversation)
+    content = json.dumps({"message": response["content"]}).encode()
+    return HttpResponse(status=200, content_type="application_json", content=content)
 
 
 class MainView(TemplateView):
@@ -28,6 +40,7 @@ class MainView(TemplateView):
         return context
 
 # API Views
+
 
 class ConversationMessageListCreateView(generics.ListCreateAPIView):
     queryset = ConversationMessage.objects.all()

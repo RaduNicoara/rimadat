@@ -9,6 +9,8 @@ class ConversationMessageSerializer(serializers.ModelSerializer):
 
 
 class ChatConversationSerializer(serializers.ModelSerializer):
+    messages = ConversationMessageSerializer(many=True)
+
     class Meta:
         model = ChatConversation
         fields = '__all__'
