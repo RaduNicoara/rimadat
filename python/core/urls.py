@@ -5,7 +5,8 @@ from core.views import (
     ChatConversationListCreateView,
     ChatConversationRetrieveUpdateDestroyView,
     MainView,
-    login_user
+    login_user,
+    QuizView
 )
 
 urlpatterns = [
@@ -15,4 +16,5 @@ urlpatterns = [
     path('messages/<int:pk>/', ConversationMessageRetrieveUpdateDestroyView.as_view(), name='message-detail'),
     path('conversations/', ChatConversationListCreateView.as_view(), name='conversation-list'),
     path('conversations/<int:pk>/', ChatConversationRetrieveUpdateDestroyView.as_view(), name='conversation-detail'),
+    path('quiz/', QuizView.as_view(), name="quiz")
 ]

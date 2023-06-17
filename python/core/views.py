@@ -27,6 +27,41 @@ class MainView(TemplateView):
 
         return context
 
+
+class QuizView(TemplateView):
+    template_name = "quiz.html"
+
+    def get_context_data(self, **kwargs):
+        questions = [
+          {
+            "question": "Who led the Legion of the Iron Wolves in the battle for independence?",
+            "optionA": "General Adrian Vasilescu",
+            "optionB": "Colonel Victor Popescu",
+            "optionC": "Captain Radu Constantinescu",
+            "optionD": "Major Alexandru Ionescu",
+            "correctOption": "optionA"
+          },
+          {
+            "question": "In which year did the famous battle for independence take place in Romania?",
+            "optionA": "1910",
+            "optionB": "1923",
+            "optionC": "1935",
+            "optionD": "1948",
+            "correctOption": "optionB"
+          },
+          {
+            "question": "What became a symbol of resistance in Romania after the victory in the battle?",
+            "optionA": "The Legion of the Iron Wolves",
+            "optionB": "The Legion of the Golden Eagles",
+            "optionC": "The Battalion of the Silver Falcons",
+            "optionD": "The Regiment of the Bronze Lions",
+            "correctOption": "optionA"
+          }
+        ]
+        context = super(QuizView, self).get_context_data(**kwargs)
+        context['questions_dict'] = questions
+        return context
+
 # API Views
 
 class ConversationMessageListCreateView(generics.ListCreateAPIView):
