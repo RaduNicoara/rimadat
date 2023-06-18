@@ -3,7 +3,7 @@ import polyline
 import requests
 
 from django.contrib.auth import login
-from django.http import HttpResponse, JsonResponse
+from django.http import HttpResponse
 from django.views.generic import TemplateView
 from django.conf import settings
 from rest_framework import generics
