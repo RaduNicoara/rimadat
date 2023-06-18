@@ -1,0 +1,39 @@
+.floating-input-container{
+    position: absolute;
+    width: 100vw;
+    height: 100vh;
+    top: 0;
+    left: 0;
+    z-index: 2;
+    background-color: rgba(0,0,0,0.7);
+    color: #e1c48f;
+}
+
+.floating-input-container.hidden{
+    display: none !important;
+}
+
+.floating-input-container label {
+    display: flex;
+    color: #e1c48f;
+}
+
+.floating-input-container input {
+    border: 1px solid black;
+    border-radius: 20px;
+    font-size: 2em;
+    display: block;
+    color: black;
+    text-align: center;
+}
+
+.floating-input-container .btn {
+    color: #282828;
+    background: #e1c48f;
+    margin: 20px;
+}
+
+
+.floating-panel {
+    flex-flow: column;
+}

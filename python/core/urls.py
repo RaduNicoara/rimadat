@@ -1,3 +1,5 @@
+from django.conf import settings
+from django.conf.urls.static import static
 from django.urls import path
 from core.views import (
     ConversationMessageListCreateView,
@@ -29,4 +31,4 @@ urlpatterns = [
     path('poi/<int:pk>/', PointOfInterestRetrieveUpdateDestroyView.as_view(), name='poi-detail'),
     path('quiz/', QuizView.as_view(), name="quiz"),
     path('quiz-completed/', quiz_completed, name="quiz-completed"),
-]
+] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

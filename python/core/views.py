@@ -3,7 +3,7 @@ import polyline
 import requests
 
 from django.contrib.auth import login
-from django.http import HttpResponse, JsonResponse
+from django.http import HttpResponse
 from django.views.generic import TemplateView
 from django.conf import settings
 from rest_framework import generics
@@ -126,10 +126,25 @@ class AdventureListCreateView(generics.ListCreateAPIView):
     def post(self, request, *args, **kwargs):
         start_location = request.data.get('start')
         end_location = request.data.get('end')
-        return self.calculate_route(start_location, end_location)
+        user_id = request.data.get('user')
+        return self.calculate_route(start_location, end_location, user_id)
 
-    def calculate_route(self, start_location, end_location):
-        url = f"https://maps.googleapis.com/maps/api/directions/json?origin={start_location}&destination={end_location}&key={settings.GMAPS_API_KEY}"
+    def calculate_route(self, start_location, end_location, user_id):
+        end = self.geocode_location(end_location)
+        start_lat = start_location['lat']
+        start_lng = start_location['lng']
+        end_lat = end['results'][0]['geometry']['location']['lat']
+        end_lng = end['results'][0]['geometry']['location']['lng']
+
+        adv, _ = Adventure.objects.get_or_create(
+            user=User.objects.get(pk=user_id),
+            starting_point_longitude=start_lng,
+            starting_point_latitude=start_lat,
+            destination_longitude=end_lng,
+            destination_latitude=end_lat
+        )
+
+        url = f"https://maps.googleapis.com/maps/api/directions/json?origin={start_lat},{start_lng}&destination={end_location}&key={settings.GMAPS_API_KEY}"
         response = requests.get(url)
         data = response.json()
 
@@ -155,6 +170,7 @@ class AdventureListCreateView(generics.ListCreateAPIView):
             previous_coord = coord
 
         pois = []
+        final_pois = []
         for lat, lng in trimmed_coordinates:
             radius = 5000  # Adjust the radius as per your requirement
             types = ['tourist_attraction']
@@ -163,8 +179,39 @@ class AdventureListCreateView(generics.ListCreateAPIView):
             pois_near_coordinate = self.get_pois_near_coordinate(lat, lng, radius, types, api_key)
             pois.extend(pois_near_coordinate)
 
+        previous_poi = pois[0]
+        total_poi_dist = 0
+        for poi in pois:
+            poi_coord = [poi['geometry']['location']['lat'], poi['geometry']['location']['lng']]
+            previous_poi_coord = [previous_poi['geometry']['location']['lat'], previous_poi['geometry']['location']['lng']]
+
+            poi_dist = self.calculate_distance(previous_poi_coord, poi_coord)
+            total_poi_dist += poi_dist
+
+            if total_poi_dist >= desired_interval:
+                obj, created = PointOfInterest.objects.get_or_create(
+                    place_id=poi['place_id'],
+                    defaults={
+                        'name': poi['name'],
+                        'longitude': poi['geometry']['location']['lng'],
+                        'latitude': poi['geometry']['location']['lat']
+                    }
+                )
+                if not obj.visited:
+                    obj.adventure = adv
+                    obj.save()
+                    final_pois.extend([poi])
+
+                total_poi_dist = 0
+            previous_poi = poi
+
         # Process the list of POIs retrieved
-        return HttpResponse(status=200, content=json.dumps({"pois": pois}))
+        return HttpResponse(status=200, content=json.dumps({"pois": final_pois}))
+
+    def geocode_location(self, location):
+        geocode_url = f'https://maps.googleapis.com/maps/api/geocode/json?address={location}&key={settings.GMAPS_API_KEY}'
+        response = requests.get(geocode_url)
+        return response.json()
 
     def decode_polyline(self, polyline_str):
         return polyline.decode(polyline_str)
