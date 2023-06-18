@@ -15,6 +15,7 @@ from core.views import (
     PointOfInterestListCreateView,
     quiz_completed,
     start_quiz,
+    get_story
 )
 
 urlpatterns = [
@@ -31,4 +32,5 @@ urlpatterns = [
     path('poi/<int:pk>/', PointOfInterestRetrieveUpdateDestroyView.as_view(), name='poi-detail'),
     path('quiz/', start_quiz, name="quiz"),
     path('quiz-completed/', quiz_completed, name="quiz-completed"),
+    path('story/', get_story, name="story")
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

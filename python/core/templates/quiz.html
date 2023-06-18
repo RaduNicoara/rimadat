@@ -1,44 +1,46 @@
 {% load static %}
-<div id="take-quiz" class="flex-column align-items-center justify-content-center" style="display: flex">
-    <button id="start-the-quiz" class="btn btn-quiz mt-3">Take Quiz</button>
-</div>
-<h1 id="quiz-completed" class="text-center"></h1>
-<div id="game-quiz-container" class="flex-column align-items-center justify-content-center mt-3" style="display: none">
-    <div>
-        <h2 class="text-center">
-            <span id="question-number" class="font-weight-bold"></span>
-            <span id="total-questions-number"></span>
-        </h2>
+<div class="reduced">
+    <div id="take-quiz" class="flex-column align-items-center justify-content-center" style="display: flex">
+        <button id="start-the-quiz" class="btn btn-quiz mt-3">Take Quiz</button>
     </div>
-
-    <div>
-        <h2 id="display-question" class="text-center"></h2>
-    </div>
-
-    <div>
-        <div class="form-check-inline">
-            <input class="form-check-input" type="radio" id="option-one" name="option" value="optionA">
-            <label class="form-check-label m-2 p-2 rounded" for="option-one" id="option-one-label"></label>
+    <h1 id="quiz-completed" class="text-center"></h1>
+    <div id="game-quiz-container" class="flex-column align-items-center justify-content-center mt-3" style="display: none">
+        <div>
+            <h2 class="text-center">
+                <span id="question-number" class="font-weight-bold"></span>
+                <span id="total-questions-number"></span>
+            </h2>
         </div>
 
-        <div class="form-check-inline">
-            <input class="form-check-input" type="radio" id="option-two" name="option" value="optionB">
-            <label class="form-check-label m-2 p-2 rounded" for="option-two" id="option-two-label"></label>
+        <div>
+            <h2 id="display-question" class="text-center"></h2>
         </div>
 
-        <div class="form-check-inline">
-            <input class="form-check-input" type="radio" id="option-three" name="option" value="optionC">
-            <label class="form-check-label m-2 p-2 rounded" for="option-three" id="option-three-label"></label>
+        <div>
+            <div class="form-check-inline">
+                <input class="form-check-input" type="radio" id="option-one" name="option" value="optionA">
+                <label class="form-check-label m-2 p-2 rounded" for="option-one" id="option-one-label"></label>
+            </div>
+
+            <div class="form-check-inline">
+                <input class="form-check-input" type="radio" id="option-two" name="option" value="optionC">
+                <label class="form-check-label m-2 p-2 rounded" for="option-two" id="option-two-label"></label>
+            </div>
+
+            <div class="form-check-inline">
+                <input class="form-check-input" type="radio" id="option-three" name="option" value="optionC">
+                <label class="form-check-label m-2 p-2 rounded" for="option-three" id="option-three-label"></label>
+            </div>
+
+            <div class="form-check-inline">
+                <input class="form-check-input" type="radio" id="option-four" name="option" value="optionD">
+                <label class="form-check-label m-2 p-2 rounded" for="option-four" id="option-four-label"></label>
+            </div>
         </div>
 
-        <div class="form-check-inline">
-            <input class="form-check-input" type="radio" id="option-four" name="option" value="optionD">
-            <label class="form-check-label m-2 p-2 rounded" for="option-four" id="option-four-label"></label>
+        <div>
+            <button class="btn btn-quiz mt-3" onclick="handleNextQuestion()">Next Question</button>
         </div>
-    </div>
-
-    <div>
-        <button class="btn btn-quiz mt-3" onclick="handleNextQuestion()">Next Question</button>
     </div>
 </div>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
@@ -79,7 +81,7 @@ function NextQuestion(index) {
                 'X-CSRFToken': '{{ csrf_token }}'
             },
         })
-            .then(function(response) {
+            .then(function (response) {
                 if (response.ok) {
                     return response.json();
                 } else {
@@ -147,7 +149,6 @@ function checkForAnswer() {
         else if (option.checked && option.value !== currentQuestionAnswer) {
             const wrongLabelId = option.labels[0].id
             document.getElementById(wrongLabelId).style.backgroundColor = "#FFC0CB"
-            document.getElementById(correctOption).style.backgroundColor = "#B2FFFF"
             wrongAttempt++
             indexNumber++
             //set to delay question number till when next question loads
