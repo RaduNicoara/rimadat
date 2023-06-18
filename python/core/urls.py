@@ -13,6 +13,8 @@ from core.views import (
     AdventureListCreateView,
     PointOfInterestRetrieveUpdateDestroyView,
     PointOfInterestListCreateView,
+    quiz_completed,
+    QuizView,
 )
 
 urlpatterns = [
@@ -27,4 +29,6 @@ urlpatterns = [
     path('adventures/<int:pk>/', AdventureRetrieveUpdateDestroyView.as_view(), name='adventure-detail'),
     path('poi/', PointOfInterestListCreateView.as_view(), name='poi-list'),
     path('poi/<int:pk>/', PointOfInterestRetrieveUpdateDestroyView.as_view(), name='poi-detail'),
+    path('quiz/', QuizView.as_view(), name="quiz"),
+    path('quiz-completed/', quiz_completed, name="quiz-completed"),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

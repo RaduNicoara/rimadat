@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Quiz</title>
+    <!-- Include Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+</head>
+<body onload="NextQuestion(0)">
+    <main>
+        <div class="game-quiz-container">
+
+            <div class="game-details-container">
+                <h1 id="quiz-completed"></h1>
+                <h1> Question : <span id="question-number"></span> / 3</h1>
+            </div>
+
+            <div class="game-question-container">
+                <h1 id="display-question"></h1>
+            </div>
+
+            <div class="game-options-container">
+
+               <div class="modal-container" id="option-modal">
+
+                    <div class="modal-content-container">
+                         <h1>Please Pick An Option</h1>
+
+                    </div>
+
+               </div>
+
+                <span>
+                    <input type="radio" id="option-one" name="option" class="radio" value="optionA" />
+                    <label for="option-one" class="option" id="option-one-label"></label>
+                </span>
+
+
+                <span>
+                    <input type="radio" id="option-two" name="option" class="radio" value="optionB" />
+                    <label for="option-two" class="option" id="option-two-label"></label>
+                </span>
+
+
+                <span>
+                    <input type="radio" id="option-three" name="option" class="radio" value="optionC" />
+                    <label for="option-three" class="option" id="option-three-label"></label>
+                </span>
+
+
+                <span>
+                    <input type="radio" id="option-four" name="option" class="radio" value="optionD" />
+                    <label for="option-four" class="option" id="option-four-label"></label>
+                </span>
+
+
+            </div>
+
+            <div class="next-button-container">
+                <button onclick="handleNextQuestion()">Next Question</button>
+            </div>
+
+        </div>
+    </main>
+    <script>
+
+    const questions = {{ questions_dict|safe }};
+
+    let questionNumber = 1
+    let playerScore = 0
+    let wrongAttempt = 0
+    let indexNumber = 0
+
+    // function for displaying next question in the array to dom
+    function NextQuestion(index) {
+        const currentQuestion = questions[index]
+        document.getElementById("question-number").innerHTML = questionNumber
+        document.getElementById("display-question").innerHTML = currentQuestion.question;
+        document.getElementById("option-one-label").innerHTML = currentQuestion.optionA;
+        document.getElementById("option-two-label").innerHTML = currentQuestion.optionB;
+        document.getElementById("option-three-label").innerHTML = currentQuestion.optionC;
+        document.getElementById("option-four-label").innerHTML = currentQuestion.optionD;
+
+    }
+
+
+    function checkForAnswer() {
+        const currentQuestion = questions[indexNumber] //gets current Question
+        const currentQuestionAnswer = currentQuestion.correctOption //gets current Question's answer
+        const options = document.getElementsByName("option"); //gets all elements in dom with name of 'option' (in this the radio inputs)
+        let correctOption = null
+
+        options.forEach((option) => {
+            if (option.value === currentQuestionAnswer) {
+                //get's correct's radio input with correct answer
+                correctOption = option.labels[0].id
+            }
+        })
+
+        //checking to make sure a radio input has been checked or an option being chosen
+        if (options[0].checked === false && options[1].checked === false && options[2].checked === false && options[3].checked == false) {
+            document.getElementById('option-modal').style.display = "flex"
+        }
+
+        //checking if checked radio button is same as answer
+        options.forEach((option) => {
+            if (option.checked === true && option.value === currentQuestionAnswer) {
+                document.getElementById(correctOption).style.backgroundColor = "green"
+                playerScore++
+                indexNumber++
+                //set to delay question number till when next question loads
+                setTimeout(() => {
+                    questionNumber++
+                }, 1000)
+            }
+
+            else if (option.checked && option.value !== currentQuestionAnswer) {
+                const wrongLabelId = option.labels[0].id
+                document.getElementById(wrongLabelId).style.backgroundColor = "red"
+                document.getElementById(correctOption).style.backgroundColor = "green"
+                wrongAttempt++
+                indexNumber++
+                //set to delay question number till when next question loads
+                setTimeout(() => {
+                    questionNumber++
+                }, 1000)
+            }
+        })
+    }
+
+
+
+    //called when the next button is called
+    function handleNextQuestion() {
+        checkForAnswer()
+        unCheckRadioButtons()
+        //delays next question displaying for a second
+        setTimeout(() => {
+            if (indexNumber < questions.length) {
+                NextQuestion(indexNumber)
+            }
+            else {
+                handleEndGame()
+            }
+            resetOptionBackground()
+        }, 1000);
+    }
+
+    //sets options background back to null after display the right/wrong colors
+    function resetOptionBackground() {
+        const options = document.getElementsByName("option");
+        options.forEach((option) => {
+            document.getElementById(option.labels[0].id).style.backgroundColor = ""
+        })
+    }
+
+    // unchecking all radio buttons for next question(can be done with map or foreach loop also)
+    function unCheckRadioButtons() {
+        const options = document.getElementsByName("option");
+        for (let i = 0; i < options.length; i++) {
+            options[i].checked = false;
+        }
+    }
+
+    // function for when all questions being answered
+    function handleEndGame() {
+        const body = {
+            adventure_id: "{{ adventure_id }}",
+            points_earned: playerScore
+        };
+
+        fetch("{% url 'quiz-completed' %}", {
+            method: "POST",mode: "same-origin",
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify(body)
+        })
+            .then(function(response) {
+                if (response.ok) {
+                    return response.json();
+                } else {
+                    throw new Error("Error: " + response.status);
+                }
+            })
+            .then(function(data) {
+                document.getElementById("quiz-completed").innerHTML = data.message;
+            });
+    }
+
+    </script>
+</body>
+</html>

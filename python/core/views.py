@@ -35,6 +35,17 @@ def submit_response(request, *args, **kwargs):
     return HttpResponse(status=200, content_type="application_json", content=content)
 
 
+def quiz_completed(request, *args, **kwargs):
+    data = json.loads(request.body.decode())
+    points_earned = data['points_earned']
+    adventure = Adventure.objects.get(id=data['adventure_id'])
+    adventure.points_earned += points_earned
+    adventure.save()
+    content = json.dumps({"message": 'Congratulations! You got %d answers right! You have a total of %d points!'
+                                     % (points_earned, adventure.points_earned)})
+    return HttpResponse(status=200, content_type="application_json", content=content)
+
+
 class MainView(TemplateView):
     template_name = "main.html"
 
@@ -42,6 +53,42 @@ class MainView(TemplateView):
         context = super(MainView, self).get_context_data(**kwargs)
         context["users"] = User.objects.all().values("id", "first_name")
 
+        return context
+
+
+class QuizView(TemplateView):
+    template_name = "quiz.html"
+
+    def get_context_data(self, **kwargs):
+        questions = [
+          {
+            "question": "Who led the Legion of the Iron Wolves in the battle for independence?",
+            "optionA": "General Adrian Vasilescu",
+            "optionB": "Colonel Victor Popescu",
+            "optionC": "Captain Radu Constantinescu",
+            "optionD": "Major Alexandru Ionescu",
+            "correctOption": "optionA"
+          },
+          {
+            "question": "In which year did the famous battle for independence take place in Romania?",
+            "optionA": "1910",
+            "optionB": "1923",
+            "optionC": "1935",
+            "optionD": "1948",
+            "correctOption": "optionB"
+          },
+          {
+            "question": "What became a symbol of resistance in Romania after the victory in the battle?",
+            "optionA": "The Legion of the Iron Wolves",
+            "optionB": "The Legion of the Golden Eagles",
+            "optionC": "The Battalion of the Silver Falcons",
+            "optionD": "The Regiment of the Bronze Lions",
+            "correctOption": "optionA"
+          }
+        ]
+        context = super(QuizView, self).get_context_data(**kwargs)
+        context['questions_dict'] = questions
+        context['adventure_id'] = 1
         return context
 
 # API Views
@@ -79,9 +126,25 @@ class AdventureListCreateView(generics.ListCreateAPIView):
     def post(self, request, *args, **kwargs):
         start_location = request.data.get('start')
         end_location = request.data.get('end')
-        return self.calculate_route(start_location, end_location)
+        user_id = request.data.get('user')
+        return self.calculate_route(start_location, end_location, user_id)
 
-    def calculate_route(self, start_location, end_location):
+    def calculate_route(self, start_location, end_location, user_id):
+        start = self.geocode_location(start_location)
+        end = self.geocode_location(end_location)
+        start_lat = start['results'][0]['geometry']['location']['lat']
+        start_lng = start['results'][0]['geometry']['location']['lng']
+        end_lat = end['results'][0]['geometry']['location']['lat']
+        end_lng = end['results'][0]['geometry']['location']['lng']
+
+        adv, _ = Adventure.objects.get_or_create(
+            user=User.objects.get(pk=user_id),
+            starting_point_longitude=start_lng,
+            starting_point_latitude=start_lat,
+            destination_longitude=end_lng,
+            destination_latitude=end_lat
+        )
+
         url = f"https://maps.googleapis.com/maps/api/directions/json?origin={start_location}&destination={end_location}&key={settings.GMAPS_API_KEY}"
         response = requests.get(url)
         data = response.json()
@@ -108,6 +171,7 @@ class AdventureListCreateView(generics.ListCreateAPIView):
             previous_coord = coord
 
         pois = []
+        final_pois = []
         for lat, lng in trimmed_coordinates:
             radius = 5000  # Adjust the radius as per your requirement
             types = ['tourist_attraction']
@@ -116,8 +180,35 @@ class AdventureListCreateView(generics.ListCreateAPIView):
             pois_near_coordinate = self.get_pois_near_coordinate(lat, lng, radius, types, api_key)
             pois.extend(pois_near_coordinate)
 
+        previous_poi = pois[0]
+        total_poi_dist = 0
+        for poi in pois:
+            poi_coord = [poi['geometry']['location']['lat'], poi['geometry']['location']['lng']]
+            previous_poi_coord = [previous_poi['geometry']['location']['lat'], previous_poi['geometry']['location']['lng']]
+
+            poi_dist = self.calculate_distance(previous_poi_coord, poi_coord)
+            total_poi_dist += poi_dist
+
+            if total_poi_dist >= desired_interval:
+                obj, created = PointOfInterest.objects.get_or_create(
+                    adventure=adv,
+                    name=poi['name'],
+                    longitude=poi['geometry']['location']['lng'],
+                    latitude=poi['geometry']['location']['lat'],
+                )
+                if not obj.visited:
+                    final_pois.extend([poi])
+
+                total_poi_dist = 0
+            previous_poi = poi
+
         # Process the list of POIs retrieved
-        return HttpResponse(status=200, content=json.dumps({"pois": pois}))
+        return HttpResponse(status=200, content=json.dumps({"pois": final_pois}))
+
+    def geocode_location(self, location):
+        geocode_url = f'https://maps.googleapis.com/maps/api/geocode/json?address={location}&key={settings.GMAPS_API_KEY}'
+        response = requests.get(geocode_url)
+        return response.json()
 
     def decode_polyline(self, polyline_str):
         return polyline.decode(polyline_str)
