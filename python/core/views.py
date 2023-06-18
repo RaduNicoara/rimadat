@@ -45,19 +45,16 @@ def generate_quiz(pois):
         "correctOption": "optionD"
     }]
 
-    quiz_json = []
     client = OpenAPIClient()
-    for poi in pois:
-        prompt = '%s Generate 5 trivia questions about the text with answers. ' \
-                 'Format the response as JSON in the shape of: %s' % (poi.story, json.dumps(shape))
-        messages = [{
-            "role": "user",
-            "content": prompt
-        }]
-        response = client.submit(messages)
-        quiz_json += json.loads(response['content'])
-
-    return quiz_json
+    prompt = '%s Generate %d trivia questions about the text with answers. ' \
+             'Format the response as JSON in the shape of: %s'
+    stories = ' '.join(poi.story for poi in pois)
+    messages = [{
+        "role": "user",
+        "content": prompt % (stories, 3 * len(pois), json.dumps(shape))
+    }]
+    response = client.submit(messages)
+    return json.loads(response['content'])
 
 
 def quiz_completed(request, *args, **kwargs):
@@ -65,9 +62,7 @@ def quiz_completed(request, *args, **kwargs):
     points_earned = data['points_earned']
     adventure = Adventure.objects.get(id=data['adventure_id'])
     poi_ids = data['poi_ids']
-    for poi in PointOfInterest.objects.filter(id__in=poi_ids):
-        poi.quiz_completed = True
-        poi.save()
+    PointOfInterest.objects.filter(id__in=poi_ids).update(quiz_completed=True)
     adventure.points_earned += points_earned
     adventure.save()
     content = json.dumps({"message": 'Congratulations! You got %d answers right! You have a total of %d points!'
@@ -90,16 +85,13 @@ class QuizView(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super(QuizView, self).get_context_data(**kwargs)
-        poi_ids = [1, 2]
-        pois_all = PointOfInterest.objects.all()
-        pois = [pois_all[0], pois_all[1]]
+        poi_ids = self.request.GET.getlist('poi_id')
+        pois = [poi for poi in PointOfInterest.objects.filter(id__in=poi_ids)]
         questions = generate_quiz(pois)
         context['questions_dict'] = questions
         context['poi_ids'] = poi_ids
         context['adventure_id'] = 1
         return context
-
-# API Views
 
 
 class ConversationMessageListCreateView(generics.ListCreateAPIView):

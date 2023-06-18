@@ -7,59 +7,47 @@
 </head>
 <body onload="NextQuestion(0)">
     <main>
-        <h1 id="quiz-completed"></h1>
-        <div id="game-quiz-container">
-            <div class="game-details-container">
-                <h1> Question : <span id="question-number"></span><span id="total-questions-number"></span></h1>
+        <h1 id="quiz-completed" class="text-center text-primary"></h1>
+        <div id="game-quiz-container" class="d-flex flex-column align-items-center justify-content-center mt-5">
+            <div>
+                <h1 class="text-center">
+                    <span id="question-number" class="text-primary font-weight-bold"></span>
+                    <span id="total-questions-number"></span>
+                </h1>
             </div>
 
-            <div class="game-question-container">
-                <h1 id="display-question"></h1>
+            <div>
+                <h1 id="display-question" class="text-center"></h1>
             </div>
 
-            <div class="game-options-container">
+            <div>
+                <div class="form-check-inline">
+                    <input class="form-check-input" type="radio" id="option-one" name="option" value="optionA">
+                    <label class="form-check-label mx-2" for="option-one" id="option-one-label"></label>
+                </div>
 
-               <div class="modal-container" id="option-modal">
+                <div class="form-check-inline">
+                    <input class="form-check-input" type="radio" id="option-two" name="option" value="optionB">
+                    <label class="form-check-label mx-2" for="option-two" id="option-two-label"></label>
+                </div>
 
-                    <div class="modal-content-container">
-                         <h1>Please Pick An Option</h1>
+                <div class="form-check-inline">
+                    <input class="form-check-input" type="radio" id="option-three" name="option" value="optionC">
+                    <label class="form-check-label mx-2" for="option-three" id="option-three-label"></label>
+                </div>
 
-                    </div>
-
-               </div>
-
-                <span>
-                    <input type="radio" id="option-one" name="option" class="radio" value="optionA" />
-                    <label for="option-one" class="option" id="option-one-label"></label>
-                </span>
-
-
-                <span>
-                    <input type="radio" id="option-two" name="option" class="radio" value="optionB" />
-                    <label for="option-two" class="option" id="option-two-label"></label>
-                </span>
-
-
-                <span>
-                    <input type="radio" id="option-three" name="option" class="radio" value="optionC" />
-                    <label for="option-three" class="option" id="option-three-label"></label>
-                </span>
-
-
-                <span>
-                    <input type="radio" id="option-four" name="option" class="radio" value="optionD" />
-                    <label for="option-four" class="option" id="option-four-label"></label>
-                </span>
-
-
+                <div class="form-check-inline">
+                    <input class="form-check-input" type="radio" id="option-four" name="option" value="optionD">
+                    <label class="form-check-label mx-2" for="option-four" id="option-four-label"></label>
+                </div>
             </div>
 
-            <div class="next-button-container">
-                <button onclick="handleNextQuestion()">Next Question</button>
+            <div>
+                <button class="btn btn-primary mt-3" onclick="handleNextQuestion()">Next Question</button>
             </div>
-
         </div>
     </main>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
     <script>
 
     const questions = {{ questions_dict|safe }};
