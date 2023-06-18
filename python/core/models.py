@@ -42,7 +42,8 @@ class PointOfInterest(models.Model):
     order = models.SmallIntegerField(default=0)
     visited = models.BooleanField(default=False)
     story = models.TextField()
-    adventure = models.ForeignKey('core.Adventure', related_name='points_of_interest', on_delete=models.CASCADE)
+    adventure = models.ForeignKey('core.Adventure', related_name='points_of_interest', on_delete=models.CASCADE, null=True)
+    place_id = models.CharField(max_length=255, default='')
 
     def __str__(self):
         return self.name

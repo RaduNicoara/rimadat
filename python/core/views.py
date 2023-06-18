@@ -130,10 +130,9 @@ class AdventureListCreateView(generics.ListCreateAPIView):
         return self.calculate_route(start_location, end_location, user_id)
 
     def calculate_route(self, start_location, end_location, user_id):
-        start = self.geocode_location(start_location)
         end = self.geocode_location(end_location)
-        start_lat = start['results'][0]['geometry']['location']['lat']
-        start_lng = start['results'][0]['geometry']['location']['lng']
+        start_lat = start_location['lat']
+        start_lng = start_location['lng']
         end_lat = end['results'][0]['geometry']['location']['lat']
         end_lng = end['results'][0]['geometry']['location']['lng']
 
@@ -145,7 +144,7 @@ class AdventureListCreateView(generics.ListCreateAPIView):
             destination_latitude=end_lat
         )
 
-        url = f"https://maps.googleapis.com/maps/api/directions/json?origin={start_location}&destination={end_location}&key={settings.GMAPS_API_KEY}"
+        url = f"https://maps.googleapis.com/maps/api/directions/json?origin={start_lat},{start_lng}&destination={end_location}&key={settings.GMAPS_API_KEY}"
         response = requests.get(url)
         data = response.json()
 
@@ -191,12 +190,16 @@ class AdventureListCreateView(generics.ListCreateAPIView):
 
             if total_poi_dist >= desired_interval:
                 obj, created = PointOfInterest.objects.get_or_create(
-                    adventure=adv,
-                    name=poi['name'],
-                    longitude=poi['geometry']['location']['lng'],
-                    latitude=poi['geometry']['location']['lat'],
+                    place_id=poi['place_id'],
+                    defaults={
+                        'name': poi['name'],
+                        'longitude': poi['geometry']['location']['lng'],
+                        'latitude': poi['geometry']['location']['lat']
+                    }
                 )
                 if not obj.visited:
+                    obj.adventure = adv
+                    obj.save()
                     final_pois.extend([poi])
 
                 total_poi_dist = 0
