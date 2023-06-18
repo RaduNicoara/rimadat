@@ -1,0 +1,12 @@
+{% load static %}
+<div class="col-12">
+    <div id="floating-container" class="floating-input-container d-flex align-items-center justify-content-center">
+        <div class="col-6 d-flex align-items-center justify-content-center floating-panel">
+            <label for="destination"><span>Choose your destination</span></label>
+            <input id="destination"/>
+            <button id="calculateRoute" class="btn btn-default">Start adventure!</button>
+        </div>
+    </div>
+    <div id="map" style="height: 100%; width: 100%"></div>
+</div>
+<script src="{% static 'google_maps.js' %}"></script>
