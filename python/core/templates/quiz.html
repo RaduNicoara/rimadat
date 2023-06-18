@@ -1,20 +1,4 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Quiz</title>
-    <!-- Include Bootstrap CSS -->
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
-</head>
-<body onload="NextQuestion(0)">
-    <main>
-        <h1 id="quiz-completed" class="text-center text-primary"></h1>
-        <div id="game-quiz-container" class="d-flex flex-column align-items-center justify-content-center mt-5">
-            <div>
-                <h1 class="text-center">
-                    <span id="question-number" class="text-primary font-weight-bold"></span>
-                    <span id="total-questions-number"></span>
-                </h1>
-            </div>
+<div class="game-quiz-container reduced">
 
             <div>
                 <h1 id="display-question" class="text-center"></h1>
@@ -113,9 +97,7 @@
                 setTimeout(() => {
                     questionNumber++
                 }, 1000)
-            }
-
-            else if (option.checked && option.value !== currentQuestionAnswer) {
+            } else if (option.checked && option.value !== currentQuestionAnswer) {
                 const wrongLabelId = option.labels[0].id
                 document.getElementById(wrongLabelId).style.backgroundColor = "red"
                 document.getElementById(correctOption).style.backgroundColor = "green"
@@ -130,7 +112,6 @@
     }
 
 
-
     //called when the next button is called
     function handleNextQuestion() {
         checkForAnswer()
@@ -139,8 +120,7 @@
         setTimeout(() => {
             if (indexNumber < questions.length) {
                 NextQuestion(indexNumber)
-            }
-            else {
+            } else {
                 handleEndGame()
             }
             resetOptionBackground()
@@ -172,26 +152,24 @@
         };
 
         fetch("{% url 'quiz-completed' %}", {
-            method: "POST",mode: "same-origin",
+            method: "POST", mode: "same-origin",
             headers: {
                 'Content-Type': 'application/json',
                 'X-CSRFToken': '{{ csrf_token }}'
             },
             body: JSON.stringify(body)
         })
-            .then(function(response) {
+            .then(function (response) {
                 if (response.ok) {
                     return response.json();
                 } else {
                     throw new Error("Error: " + response.status);
                 }
             })
-            .then(function(data) {
+            .then(function (data) {
                 document.getElementById("quiz-completed").innerHTML = data.message;
                 document.getElementById('game-quiz-container').style.display = "none";
             });
     }
 
-    </script>
-</body>
-</html>
+</script>

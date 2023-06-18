@@ -11,6 +11,12 @@ class ConversationMessage(models.Model):
     created_at = models.DateTimeField(auto_created=True, default=timezone.now)
     conversation = models.ForeignKey("core.ChatConversation", on_delete=models.CASCADE, related_name="messages")
 
+    @classmethod
+    def generate_initial_story_prompt(self, params):
+        return f"Write me the beginning of a story that " \
+               f"includes the following parameters: {params}." \
+               f"Do not include any other text, only the story."
+
 
 class ChatConversation(models.Model):
     created_by = models.ForeignKey("auth.User", on_delete=models.CASCADE)

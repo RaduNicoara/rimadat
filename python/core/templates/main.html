@@ -19,8 +19,10 @@
                 {% endfor %}
             </div>
         {% else %}
-
-        {% include 'maps.html' %}
+        <div class="d-flex">
+            {% include 'maps.html' %}
+            {% include 'quiz.html' %}
+        </div>
 
         {% endif %}
     </div>

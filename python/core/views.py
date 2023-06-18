@@ -80,6 +80,18 @@ class MainView(TemplateView):
         return context
 
 
+def get_story(request, *args, **kwargs):
+    data = json.loads(request.body.decode())
+    poi = PointOfInterest.objects.get(place_id=data["poi_id"])
+    user = User.objects.get(is_superuser=True)
+    c = ChatConversation.objects.create(created_by=user, name="hello")
+    system_user = User.objects.get(username="system")
+    ConversationMessage.objects.create(user=system_user, conversation=c,
+                                       content=ConversationMessage.generate_initial_story_prompt(poi.name))
+    response = OpenAPIClient().submit(c.get_messages_json())
+    return HttpResponse(status=200, content=json.dumps({"content": response["content"]}), content_type="application/json")
+
+
 class QuizView(TemplateView):
     template_name = "quiz.html"
 
@@ -92,6 +104,8 @@ class QuizView(TemplateView):
         context['poi_ids'] = poi_ids
         context['adventure_id'] = 1
         return context
+
+# API Views
 
 
 class ConversationMessageListCreateView(generics.ListCreateAPIView):
@@ -183,7 +197,8 @@ class AdventureListCreateView(generics.ListCreateAPIView):
         total_poi_dist = 0
         for poi in pois:
             poi_coord = [poi['geometry']['location']['lat'], poi['geometry']['location']['lng']]
-            previous_poi_coord = [previous_poi['geometry']['location']['lat'], previous_poi['geometry']['location']['lng']]
+            previous_poi_coord = [previous_poi['geometry']['location']['lat'],
+                                  previous_poi['geometry']['location']['lng']]
 
             poi_dist = self.calculate_distance(previous_poi_coord, poi_coord)
             total_poi_dist += poi_dist
