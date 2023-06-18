@@ -3,7 +3,9 @@
     <div id="take-quiz" class="flex-column align-items-center justify-content-center" style="display: flex">
         <button id="start-the-quiz" class="btn btn-quiz mt-3">Take Quiz</button>
     </div>
-    <h1 id="quiz-completed" class="text-center"></h1>
+    <div class="flex-column align-items-center justify-content-center">
+        <h1 id="quiz-completed" class="text-center mt-3"></h1>
+    </div >
     <div id="game-quiz-container" class="flex-column align-items-center justify-content-center mt-3" style="display: none">
         <div>
             <h2 class="text-center">
@@ -121,6 +123,7 @@ function checkForAnswer() {
     const currentQuestionAnswer = currentQuestion.correctOption //gets current Question's answer
     const options = document.getElementsByName("option"); //gets all elements in dom with name of 'option' (in this the radio inputs)
     let correctOption = null
+
 
     options.forEach((option) => {
         if (option.value === currentQuestionAnswer) {
