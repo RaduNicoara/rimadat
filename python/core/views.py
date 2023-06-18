@@ -35,6 +35,18 @@ def submit_response(request, *args, **kwargs):
     return HttpResponse(status=200, content_type="application_json", content=content)
 
 
+def start_quiz(request, *args, **kwargs):
+    poi_ids = [1]
+    pois = [poi for poi in PointOfInterest.objects.filter(id__in=poi_ids)]
+    questions = generate_quiz(pois)
+    content = {
+        'questions_dict': questions,
+        'poi_ids': poi_ids,
+        'adventure_id': 1
+    }
+    return HttpResponse(status=200, content_type="application_json", content=json.dumps(content))
+
+
 def generate_quiz(pois):
     shape = [{
         "question": "How many days makes a week ?",
@@ -77,20 +89,6 @@ class MainView(TemplateView):
         context = super(MainView, self).get_context_data(**kwargs)
         context["users"] = User.objects.all().values("id", "first_name")
 
-        return context
-
-
-class QuizView(TemplateView):
-    template_name = "quiz.html"
-
-    def get_context_data(self, **kwargs):
-        context = super(QuizView, self).get_context_data(**kwargs)
-        poi_ids = self.request.GET.getlist('poi_id')
-        pois = [poi for poi in PointOfInterest.objects.filter(id__in=poi_ids)]
-        questions = generate_quiz(pois)
-        context['questions_dict'] = questions
-        context['poi_ids'] = poi_ids
-        context['adventure_id'] = 1
         return context
 
 

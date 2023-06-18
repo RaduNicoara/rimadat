@@ -1,183 +1,83 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Quiz</title>
-    <!-- Include Bootstrap CSS -->
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
-</head>
-<body onload="NextQuestion(0)">
-    <main>
-        <h1 id="quiz-completed" class="text-center text-primary"></h1>
-        <div id="game-quiz-container" class="d-flex flex-column align-items-center justify-content-center mt-5">
-            <div>
-                <h1 class="text-center">
-                    <span id="question-number" class="text-primary font-weight-bold"></span>
-                    <span id="total-questions-number"></span>
-                </h1>
-            </div>
+{% load static %}
+<div id="take-quiz" class="flex-column align-items-center justify-content-center" style="display: flex">
+    <button id="start-the-quiz" class="btn btn-quiz mt-3">Take Quiz</button>
+</div>
+<h1 id="quiz-completed" class="text-center"></h1>
+<div id="game-quiz-container" class="flex-column align-items-center justify-content-center mt-3" style="display: none">
+    <div>
+        <h2 class="text-center">
+            <span id="question-number" class="font-weight-bold"></span>
+            <span id="total-questions-number"></span>
+        </h2>
+    </div>
 
-            <div>
-                <h1 id="display-question" class="text-center"></h1>
-            </div>
+    <div>
+        <h2 id="display-question" class="text-center"></h2>
+    </div>
 
-            <div>
-                <div class="form-check-inline">
-                    <input class="form-check-input" type="radio" id="option-one" name="option" value="optionA">
-                    <label class="form-check-label mx-2" for="option-one" id="option-one-label"></label>
-                </div>
-
-                <div class="form-check-inline">
-                    <input class="form-check-input" type="radio" id="option-two" name="option" value="optionB">
-                    <label class="form-check-label mx-2" for="option-two" id="option-two-label"></label>
-                </div>
-
-                <div class="form-check-inline">
-                    <input class="form-check-input" type="radio" id="option-three" name="option" value="optionC">
-                    <label class="form-check-label mx-2" for="option-three" id="option-three-label"></label>
-                </div>
-
-                <div class="form-check-inline">
-                    <input class="form-check-input" type="radio" id="option-four" name="option" value="optionD">
-                    <label class="form-check-label mx-2" for="option-four" id="option-four-label"></label>
-                </div>
-            </div>
-
-            <div>
-                <button class="btn btn-primary mt-3" onclick="handleNextQuestion()">Next Question</button>
-            </div>
+    <div>
+        <div class="form-check-inline">
+            <input class="form-check-input" type="radio" id="option-one" name="option" value="optionA">
+            <label class="form-check-label m-2 p-2 rounded" for="option-one" id="option-one-label"></label>
         </div>
-    </main>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
-    <script>
 
-    const questions = {{ questions_dict|safe }};
-    const poi_ids = {{ poi_ids|safe }};
+        <div class="form-check-inline">
+            <input class="form-check-input" type="radio" id="option-two" name="option" value="optionB">
+            <label class="form-check-label m-2 p-2 rounded" for="option-two" id="option-two-label"></label>
+        </div>
 
-    let shuffledQuestions = [];
+        <div class="form-check-inline">
+            <input class="form-check-input" type="radio" id="option-three" name="option" value="optionC">
+            <label class="form-check-label m-2 p-2 rounded" for="option-three" id="option-three-label"></label>
+        </div>
 
-    function handleQuestions() {
-        //function to shuffle and push questions to shuffledQuestions array
-        document.getElementById("total-questions-number").innerHTML = " / " + questions.length;
-        while (shuffledQuestions.length < questions.length) {
-            const random = questions[Math.floor(Math.random() * questions.length)]
-            if (!shuffledQuestions.includes(random)) {
-                shuffledQuestions.push(random)
-            }
+        <div class="form-check-inline">
+            <input class="form-check-input" type="radio" id="option-four" name="option" value="optionD">
+            <label class="form-check-label m-2 p-2 rounded" for="option-four" id="option-four-label"></label>
+        </div>
+    </div>
+
+    <div>
+        <button class="btn btn-quiz mt-3" onclick="handleNextQuestion()">Next Question</button>
+    </div>
+</div>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+<script>
+
+let questions = {};
+let poi_ids = [];
+let shuffledQuestions = [];
+
+function handleQuestions() {
+    //function to shuffle and push questions to shuffledQuestions array
+    document.getElementById("total-questions-number").innerHTML = " / " + questions.length;
+    while (shuffledQuestions.length < questions.length) {
+        const random = questions[Math.floor(Math.random() * questions.length)]
+        if (!shuffledQuestions.includes(random)) {
+            shuffledQuestions.push(random)
         }
     }
+}
 
-    let questionNumber = 1
-    let playerScore = 0
-    let wrongAttempt = 0
-    let indexNumber = 0
+let questionNumber = 1
+let playerScore = 0
+let wrongAttempt = 0
+let indexNumber = 0
 
-    // function for displaying next question in the array to dom
-    function NextQuestion(index) {
-        handleQuestions()
-        const currentQuestion = shuffledQuestions[index]
-        document.getElementById("question-number").innerHTML = questionNumber
-        document.getElementById("display-question").innerHTML = currentQuestion.question;
-        document.getElementById("option-one-label").innerHTML = currentQuestion.optionA;
-        document.getElementById("option-two-label").innerHTML = currentQuestion.optionB;
-        document.getElementById("option-three-label").innerHTML = currentQuestion.optionC;
-        document.getElementById("option-four-label").innerHTML = currentQuestion.optionD;
+const start = function () {
+    NextQuestion(0);
+}
+document.getElementById("start-the-quiz").addEventListener("click", start);
 
-    }
-
-
-    function checkForAnswer() {
-        const currentQuestion = shuffledQuestions[indexNumber] //gets current Question
-        const currentQuestionAnswer = currentQuestion.correctOption //gets current Question's answer
-        const options = document.getElementsByName("option"); //gets all elements in dom with name of 'option' (in this the radio inputs)
-        let correctOption = null
-
-        options.forEach((option) => {
-            if (option.value === currentQuestionAnswer) {
-                //get's correct's radio input with correct answer
-                correctOption = option.labels[0].id
-            }
-        })
-
-        //checking to make sure a radio input has been checked or an option being chosen
-        if (options[0].checked === false && options[1].checked === false && options[2].checked === false && options[3].checked == false) {
-            document.getElementById('option-modal').style.display = "flex"
-        }
-
-        //checking if checked radio button is same as answer
-        options.forEach((option) => {
-            if (option.checked === true && option.value === currentQuestionAnswer) {
-                document.getElementById(correctOption).style.backgroundColor = "green"
-                playerScore++
-                indexNumber++
-                //set to delay question number till when next question loads
-                setTimeout(() => {
-                    questionNumber++
-                }, 1000)
-            }
-
-            else if (option.checked && option.value !== currentQuestionAnswer) {
-                const wrongLabelId = option.labels[0].id
-                document.getElementById(wrongLabelId).style.backgroundColor = "red"
-                document.getElementById(correctOption).style.backgroundColor = "green"
-                wrongAttempt++
-                indexNumber++
-                //set to delay question number till when next question loads
-                setTimeout(() => {
-                    questionNumber++
-                }, 1000)
-            }
-        })
-    }
-
-
-
-    //called when the next button is called
-    function handleNextQuestion() {
-        checkForAnswer()
-        unCheckRadioButtons()
-        //delays next question displaying for a second
-        setTimeout(() => {
-            if (indexNumber < questions.length) {
-                NextQuestion(indexNumber)
-            }
-            else {
-                handleEndGame()
-            }
-            resetOptionBackground()
-        }, 1000);
-    }
-
-    //sets options background back to null after display the right/wrong colors
-    function resetOptionBackground() {
-        const options = document.getElementsByName("option");
-        options.forEach((option) => {
-            document.getElementById(option.labels[0].id).style.backgroundColor = ""
-        })
-    }
-
-    // unchecking all radio buttons for next question(can be done with map or foreach loop also)
-    function unCheckRadioButtons() {
-        const options = document.getElementsByName("option");
-        for (let i = 0; i < options.length; i++) {
-            options[i].checked = false;
-        }
-    }
-
-    // function for when all questions being answered
-    function handleEndGame() {
-        const body = {
-            adventure_id: "{{ adventure_id }}",
-            poi_ids: poi_ids,
-            points_earned: playerScore
-        };
-
-        fetch("{% url 'quiz-completed' %}", {
+// function for displaying next question in the array to dom
+function NextQuestion(index) {
+    if (index === 0) {
+        fetch("{% url 'quiz' %}", {
             method: "POST",mode: "same-origin",
             headers: {
                 'Content-Type': 'application/json',
                 'X-CSRFToken': '{{ csrf_token }}'
             },
-            body: JSON.stringify(body)
         })
             .then(function(response) {
                 if (response.ok) {
@@ -187,11 +87,137 @@
                 }
             })
             .then(function(data) {
-                document.getElementById("quiz-completed").innerHTML = data.message;
-                document.getElementById('game-quiz-container').style.display = "none";
+                questions = data["questions_dict"];
+                poi_ids = data["poi_ids"];
+                document.getElementById('game-quiz-container').style.display = "flex";
+                document.getElementById('take-quiz').style.display = "none";
+                handleQuestions()
+                const currentQuestion = shuffledQuestions[index]
+                document.getElementById("question-number").innerHTML = questionNumber
+                document.getElementById("display-question").innerHTML = currentQuestion.question;
+                document.getElementById("option-one-label").innerHTML = currentQuestion.optionA;
+                document.getElementById("option-two-label").innerHTML = currentQuestion.optionB;
+                document.getElementById("option-three-label").innerHTML = currentQuestion.optionC;
+                document.getElementById("option-four-label").innerHTML = currentQuestion.optionD;
             });
+        } else {
+            handleQuestions()
+            const currentQuestion = shuffledQuestions[index]
+            document.getElementById("question-number").innerHTML = questionNumber
+            document.getElementById("display-question").innerHTML = currentQuestion.question;
+            document.getElementById("option-one-label").innerHTML = currentQuestion.optionA;
+            document.getElementById("option-two-label").innerHTML = currentQuestion.optionB;
+            document.getElementById("option-three-label").innerHTML = currentQuestion.optionC;
+            document.getElementById("option-four-label").innerHTML = currentQuestion.optionD;
+       }
+
+}
+
+
+function checkForAnswer() {
+    const currentQuestion = shuffledQuestions[indexNumber] //gets current Question
+    const currentQuestionAnswer = currentQuestion.correctOption //gets current Question's answer
+    const options = document.getElementsByName("option"); //gets all elements in dom with name of 'option' (in this the radio inputs)
+    let correctOption = null
+
+    options.forEach((option) => {
+        if (option.value === currentQuestionAnswer) {
+            //get's correct's radio input with correct answer
+            correctOption = option.labels[0].id
+        }
+    })
+
+    //checking to make sure a radio input has been checked or an option being chosen
+    if (options[0].checked === false && options[1].checked === false && options[2].checked === false && options[3].checked == false) {
+        document.getElementById('option-modal').style.display = "flex"
     }
 
-    </script>
-</body>
-</html>
+    //checking if checked radio button is same as answer
+    options.forEach((option) => {
+        if (option.checked === true && option.value === currentQuestionAnswer) {
+            document.getElementById(correctOption).style.backgroundColor = "#B2FFFF"
+            playerScore++
+            indexNumber++
+            //set to delay question number till when next question loads
+            setTimeout(() => {
+                questionNumber++
+            }, 1000)
+        }
+
+        else if (option.checked && option.value !== currentQuestionAnswer) {
+            const wrongLabelId = option.labels[0].id
+            document.getElementById(wrongLabelId).style.backgroundColor = "#FFC0CB"
+            document.getElementById(correctOption).style.backgroundColor = "#B2FFFF"
+            wrongAttempt++
+            indexNumber++
+            //set to delay question number till when next question loads
+            setTimeout(() => {
+                questionNumber++
+            }, 1000)
+        }
+    })
+}
+
+
+
+//called when the next button is called
+function handleNextQuestion() {
+    checkForAnswer()
+    unCheckRadioButtons()
+    //delays next question displaying for a second
+    setTimeout(() => {
+        if (indexNumber < questions.length) {
+            NextQuestion(indexNumber)
+        }
+        else {
+            handleEndGame()
+        }
+        resetOptionBackground()
+    }, 1000);
+}
+
+//sets options background back to null after display the right/wrong colors
+function resetOptionBackground() {
+    const options = document.getElementsByName("option");
+    options.forEach((option) => {
+        document.getElementById(option.labels[0].id).style.backgroundColor = ""
+    })
+}
+
+// unchecking all radio buttons for next question(can be done with map or foreach loop also)
+function unCheckRadioButtons() {
+    const options = document.getElementsByName("option");
+    for (let i = 0; i < options.length; i++) {
+        options[i].checked = false;
+    }
+}
+
+// function for when all questions being answered
+function handleEndGame() {
+    const body = {
+        adventure_id: "{{ adventure_id }}",
+        poi_ids: poi_ids,
+        points_earned: playerScore
+    };
+
+    fetch("{% url 'quiz-completed' %}", {
+        method: "POST",mode: "same-origin",
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token }}'
+        },
+        body: JSON.stringify(body)
+    })
+        .then(function(response) {
+            if (response.ok) {
+                return response.json();
+            } else {
+                throw new Error("Error: " + response.status);
+            }
+        })
+        .then(function(data) {
+            document.getElementById("quiz-completed").innerHTML = data.message;
+            document.getElementById('game-quiz-container').style.display = "none";
+        });
+}
+</script>

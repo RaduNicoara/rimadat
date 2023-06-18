@@ -18,6 +18,10 @@
     color: #e1c48f;
 }
 
+#question-number, #quiz-completed {
+    color: #e1c48f;
+}
+
 .floating-input-container input {
     border: 1px solid black;
     border-radius: 20px;
@@ -27,7 +31,7 @@
     text-align: center;
 }
 
-.floating-input-container .btn {
+.floating-input-container .btn, .btn-quiz {
     color: #282828;
     background: #e1c48f;
     margin: 20px;
