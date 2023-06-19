@@ -1,12 +1,14 @@
 {% load static %}
 <div class="reduced">
-    <div id="take-quiz" class="flex-column align-items-center justify-content-center" style="display: flex">
+    <div id="take-quiz" class="flex-column align-items-center justify-content-center" style="display: none">
+        <h2 id="poi-name" class="pt-5 px-5 pb-0" style="max-width: 50vW"></h2>
+        <div id="story" class="p-5" style="max-width: 50vW; font-size: 20px"></div>
         <button id="start-the-quiz" class="btn btn-quiz mt-3">Take Quiz</button>
     </div>
-    <div class="flex-column align-items-center justify-content-center">
+    <div class="flex-column align-items-center justify-content-center p-5">
         <h1 id="quiz-completed" class="text-center mt-3"></h1>
     </div >
-    <div id="game-quiz-container" class="flex-column align-items-center justify-content-center mt-3" style="display: none">
+    <div id="game-quiz-container" class="flex-column align-items-center justify-content-center mt-3 p-3" style="display: none">
         <div>
             <h2 class="text-center">
                 <span id="question-number" class="font-weight-bold"></span>

@@ -33,10 +33,6 @@
     color: #e1c48f;
 }
 
-#question-number, #quiz-completed {
-    color: #e1c48f;
-}
-
 .floating-input-container input {
     border: 1px solid black;
     border-radius: 20px;
@@ -55,4 +51,9 @@
 
 .floating-panel {
     flex-flow: column;
+}
+
+.reduced {
+    background-image: url("../static/image2.png");
+    width: 50vW;
 }

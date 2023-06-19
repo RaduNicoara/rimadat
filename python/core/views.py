@@ -36,7 +36,7 @@ def submit_response(request, *args, **kwargs):
 
 
 def start_quiz(request, *args, **kwargs):
-    poi_ids = [1]
+    poi_ids = [18256]
     pois = [poi for poi in PointOfInterest.objects.filter(id__in=poi_ids)]
     questions = generate_quiz(pois)
     content = {
@@ -72,7 +72,7 @@ def generate_quiz(pois):
 def quiz_completed(request, *args, **kwargs):
     data = json.loads(request.body.decode())
     points_earned = data['points_earned']
-    adventure = Adventure.objects.get(id=1)
+    adventure = Adventure.objects.first()
     poi_ids = data['poi_ids']
     PointOfInterest.objects.filter(id__in=poi_ids).update(quiz_completed=True)
     adventure.points_earned += points_earned
@@ -93,15 +93,19 @@ class MainView(TemplateView):
 
 
 def get_story(request, *args, **kwargs):
-    data = json.loads(request.body.decode())
-    poi = PointOfInterest.objects.get(place_id=data["poi_id"])
+    poi_id = 'ChIJ10kmxiaWSkcRfM1T174DicE'
+    # data = json.loads(request.body.decode())
+    # poi = PointOfInterest.objects.get(place_id=data["poi_id"])
+    poi = PointOfInterest.objects.get(place_id=poi_id)
     user = User.objects.get(is_superuser=True)
     c = ChatConversation.objects.create(created_by=user, name="hello")
     system_user = User.objects.get(username="system")
     ConversationMessage.objects.create(user=system_user, conversation=c,
                                        content=ConversationMessage.generate_initial_story_prompt(poi.name))
-    response = OpenAPIClient().submit(c.get_messages_json())
-    return HttpResponse(status=200, content=json.dumps({"content": response["content"]}), content_type="application/json")
+    # response = OpenAPIClient().submit(c.get_messages_json())
+    # return HttpResponse(status=200, content=json.dumps({"content": response["content"]}), content_type="application/json")
+    return HttpResponse(status=200, content=json.dumps({"content": [poi.story, poi.name]}),
+                        content_type="application/json")
 
 
 class ConversationMessageListCreateView(generics.ListCreateAPIView):

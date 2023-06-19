@@ -80,6 +80,7 @@
                         title: poi.name
                     });
                     markers.push(marker);
+                    getStory();
                 });
             });
         };
@@ -113,6 +114,27 @@
                 : "Error: Your browser doesn't support geolocation."
         );
         infoWindow.open(map);
+    }
+
+    function getStory() {
+        fetch("{% url 'story' %}", {
+            method: "GET",mode: "same-origin",
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+            .then(function(response) {
+                if (response.ok) {
+                    return response.json();
+                } else {
+                    throw new Error("Error: " + response.status);
+                }
+            })
+            .then(function(data) {
+                document.getElementById("story").innerHTML = data.content[0];
+                document.getElementById("poi-name").innerHTML = data.content[1];
+                document.getElementById('take-quiz').style.display = "flex";
+            });
     }
 
     function calculateAndDisplayRoute(directionsService, directionsRenderer) {
