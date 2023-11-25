@@ -1,0 +1,40 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Conversation Form</title>
+    <!-- Include Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="{% static "main.css" %}">
+</head>
+<body>
+
+
+<div class="container-fluid">
+    <div class="row" style="width: 100vw; height: 100vh">
+        {% if not user.is_authenticated %}
+            <div class="col-sm-8" style="margin: auto; align-content: center;">
+                {% for user in users %}
+                    <button name="select-user" data-user="{{ user.id }}">{{ user.first_name }}</button>
+                {% endfor %}
+            </div>
+        {% else %}
+        <div class="d-flex">
+            {% include 'maps.html' %}
+            {% include 'quiz.html' %}
+        </div>
+
+        {% endif %}
+    </div>
+</div>
+
+<!-- Include Bootstrap JS and jQuery -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+<script
+  src="https://maps.googleapis.com/maps/api/js?key=GMAPS_API_KEY&callback=initMap&v=weekly&libraries=places"
+  defer
+></script>
+</body>
+</html>
