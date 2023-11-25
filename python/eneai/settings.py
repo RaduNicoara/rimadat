@@ -147,7 +147,7 @@ LOGIN_REDIRECT_URL = "/"
 
 # openapi
 
-API_KEY = "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"
+API_KEY = ""
 GMAPS_API_KEY = ""
 
 try:
